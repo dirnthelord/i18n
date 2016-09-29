@@ -85,6 +85,10 @@
     <None Include="Key.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetName).dll" "C:\SVN\OKLO\ext_bin\i18n\$(TargetName).dll"
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\SVN\okloframework\branches\OKLO.SharedBusiness\ext_bin\i18n\$(TargetName).dll"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

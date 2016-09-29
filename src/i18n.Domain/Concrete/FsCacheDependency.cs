@@ -52,19 +52,28 @@ namespace i18n
             NotifyFilters changeTypes = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
             bool autoStart = true)
         {
-           // Init.
-            m_fswatcher = new FileSystemWatcher(path, filespec);
-            m_fswatcher.IncludeSubdirectories = includeSubdirectories;
-            m_fswatcher.NotifyFilter = changeTypes;
-           // Wire up event handlers.
-            var handler = new FileSystemEventHandler(OnFsEvent);
-            m_fswatcher.Changed += handler;
-            m_fswatcher.Created += handler;
-            m_fswatcher.Deleted += handler;
-            m_fswatcher.Renamed += new RenamedEventHandler(OnFsEvent);
-           // Conditionally start watching now.
-            if (autoStart) {
-                m_fswatcher.EnableRaisingEvents = true; }
+            if (path.Contains("Windows"))
+            {
+                m_fswatcher = new FileSystemWatcher();
+            }
+            else
+            {
+                // Init.
+                m_fswatcher = new FileSystemWatcher(path, filespec);
+                m_fswatcher.IncludeSubdirectories = includeSubdirectories;
+                m_fswatcher.NotifyFilter = changeTypes;
+                // Wire up event handlers.
+                var handler = new FileSystemEventHandler(OnFsEvent);
+                m_fswatcher.Changed += handler;
+                m_fswatcher.Created += handler;
+                m_fswatcher.Deleted += handler;
+                m_fswatcher.Renamed += new RenamedEventHandler(OnFsEvent);
+                // Conditionally start watching now.
+                if (autoStart)
+                {
+                    m_fswatcher.EnableRaisingEvents = true;
+                }
+            }
         }
     // Operations
         /// <summary>
