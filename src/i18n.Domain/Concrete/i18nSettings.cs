@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,22 +30,42 @@ namespace i18n.Domain.Concrete
 		}
 
 		private string MakePathAbsoluteAndFromConfigFile(string path)
-		{
-			if (Path.IsPathRooted(path))
-			{
-				return path;
-			}
-			else
-			{
-				var startPath = Path.GetDirectoryName(_settingService.GetConfigFileLocation());
-				return Path.GetFullPath(Path.Combine(startPath, path));
-			}
-		}
+		{ 
+            if (Path.IsPathRooted(path))
+            {
+                return path;
+            }
+            else
+            {
+                var startPath = Path.GetDirectoryName(_settingService.GetConfigFileLocation());
+                return Path.GetFullPath(Path.Combine(startPath, path));
+            }
+        }
+  
+        #region Locale directory
+        private static string GetFromAppSettings(string key)
+        {
+            var value = ConfigurationManager.AppSettings[key];
+            if (value == null)
+                return null;
 
+            return System.Environment.ExpandEnvironmentVariables(value);
+        }
 
-		#region Locale directory
+        private static string GetConfigPath()
+        {
+            var configPath = GetFromAppSettings("ConfigPath");
 
-		private const string _localeDirectoryDefault = "locale";
+            // then for env variable 
+            if (string.IsNullOrEmpty(configPath))
+            {
+                configPath = System.Environment.GetEnvironmentVariable("ConfigDir", EnvironmentVariableTarget.Machine);
+            }
+
+            return configPath;
+;        }
+
+        private const string _localeDirectoryDefault = "locale";
 		public virtual string LocaleDirectory
 		{
 			get
@@ -61,8 +82,14 @@ namespace i18n.Domain.Concrete
 					path = _localeDirectoryDefault;
 				}
 
-				return MakePathAbsoluteAndFromConfigFile(path);
-			}
+                var configFilePath = Path.Combine(GetConfigPath(), path);
+                if (!Directory.Exists(configFilePath))
+                {
+                    throw new ConfigurationErrorsException($"The expected i18n configuration is not found in the config directory {configFilePath}");
+                }
+
+                return configFilePath;
+            }
 			set
 			{
 				string prefixedString = GetPrefixedString("LocaleDirectory");
